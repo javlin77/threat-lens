@@ -48,6 +48,8 @@ async def predict(file: UploadFile = File(...)):
 
         # Keep original for service analysis
         original_df = df.copy()
+        
+        labels=df["label"]
 
         # Drop label for prediction
         df = df.drop("label", axis=1)
@@ -68,9 +70,12 @@ async def predict(file: UploadFile = File(...)):
 
         # Predict
         preds = model.predict(X)
+        
+               
+        
 
         total = len(preds)
-        attacks = int(sum(preds != 0))
+        attacks = int(sum(preds !=0 ))
         normal = total - attacks
 
         # 🔥 1. Attack Density (segmentation)
@@ -81,29 +86,26 @@ async def predict(file: UploadFile = File(...)):
         ]
         
         
-        counts = Counter(preds)
+        from collections import Counter
+
+        counts = Counter(labels)
 
         attack_summary = {
             "DoS": 0,
             "Probe": 0,
             "U2R": 0,
-            "R2L": 0
+            "R2L": 0,
+            "Other":0
         }
 
-        # ✅ Correct KDD mappings
-        dos = ["back", "land", "neptune", "pod", "smurf", "teardrop",
-               "apache2", "udpstorm", "processtable", "worm"]
-
-        probe = ["ipsweep", "nmap", "portsweep", "satan", "mscan", "saint"]
-
-        u2r = ["buffer_overflow", "loadmodule", "perl", "rootkit",
-               "ps", "sqlattack", "xterm"]
-
-        r2l = ["ftp_write", "guess_passwd", "imap", "multihop", "phf",
-               "spy", "warezclient", "warezmaster", "sendmail", "named",
-               "snmpgetattack", "snmpguess", "xlock", "xsnoop", "httptunnel"]
+        dos = ["back", "land", "neptune", "pod", "smurf", "teardrop"]
+        probe = ["ipsweep", "nmap", "portsweep", "satan"]
+        u2r = ["buffer_overflow", "loadmodule", "perl", "rootkit"]
+        r2l = ["ftp_write", "guess_passwd", "imap", "multihop", "phf", "warezclient", "warezmaster"]
 
         for attack, count in counts.items():
+            if attack == "normal":
+                continue
             if attack in dos:
                 attack_summary["DoS"] += count
             elif attack in probe:
@@ -112,9 +114,9 @@ async def predict(file: UploadFile = File(...)):
                 attack_summary["U2R"] += count
             elif attack in r2l:
                 attack_summary["R2L"] += count
-            # Optional debug
-            # else:
-            #     print("Unknown attack:", attack)
+            else:
+                attack_summary["other"] += count
+
         
         
 

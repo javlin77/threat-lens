@@ -36,7 +36,9 @@ export default function Dashboard({ data }) {
         <Card title="Normal" value={data.normal} color="text-green-400" />
         <Card
           title="Risk Level"
-          value={data.attack_percentage.toFixed(1) + "%"}
+          value={
+            data.attack_percentage
+          ? data.attack_percentage.toFixed(1) + "%" : "0%"}
           color="text-orange-400"
         />
 
@@ -148,7 +150,7 @@ export default function Dashboard({ data }) {
           </thead>
 
           <tbody>
-            {data.services.map((row, i) => {
+            {data.services?.map((row, i) => {
               const isHigh = row.rate > 50;
 
               return (

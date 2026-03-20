@@ -48,8 +48,6 @@ async def predict(file: UploadFile = File(...)):
 
         # Keep original for service analysis
         original_df = df.copy()
-        
-        labels=df["label"]
 
         # Drop label for prediction
         df = df.drop("label", axis=1)
@@ -70,12 +68,9 @@ async def predict(file: UploadFile = File(...)):
 
         # Predict
         preds = model.predict(X)
-        
-               
-        
 
         total = len(preds)
-        attacks = int(sum(preds !=0 ))
+        attacks = int(sum(preds != 0))
         normal = total - attacks
 
         # 🔥 1. Attack Density (segmentation)
@@ -84,41 +79,6 @@ async def predict(file: UploadFile = File(...)):
             {"segment": f"S{i+1}", "attacks": int(sum(chunk != 0))}
             for i, chunk in enumerate(chunks)
         ]
-        
-        
-        from collections import Counter
-
-        counts = Counter(labels)
-
-        attack_summary = {
-            "DoS": 0,
-            "Probe": 0,
-            "U2R": 0,
-            "R2L": 0,
-            "Other":0
-        }
-
-        dos = ["back", "land", "neptune", "pod", "smurf", "teardrop"]
-        probe = ["ipsweep", "nmap", "portsweep", "satan"]
-        u2r = ["buffer_overflow", "loadmodule", "perl", "rootkit"]
-        r2l = ["ftp_write", "guess_passwd", "imap", "multihop", "phf", "warezclient", "warezmaster"]
-
-        for attack, count in counts.items():
-            if attack == "normal":
-                continue
-            if attack in dos:
-                attack_summary["DoS"] += count
-            elif attack in probe:
-                attack_summary["Probe"] += count
-            elif attack in u2r:
-                attack_summary["U2R"] += count
-            elif attack in r2l:
-                attack_summary["R2L"] += count
-            else:
-                attack_summary["other"] += count
-
-        
-        
 
         # 🔥 2. Severity
         ratio = attacks / total
@@ -167,8 +127,7 @@ async def predict(file: UploadFile = File(...)):
             "attack_percentage": float(ratio * 100),
             "density": density_data,
             "severity": severity,
-            "services": service_data,  # 🔥 NEW DATA FOR TABLE
-            "attack_summary": attack_summary
+            "services": service_data   # 🔥 NEW DATA FOR TABLE
         }
 
     except Exception as e:

@@ -79,6 +79,44 @@ async def predict(file: UploadFile = File(...)):
             {"segment": f"S{i+1}", "attacks": int(sum(chunk != 0))}
             for i, chunk in enumerate(chunks)
         ]
+        
+        
+        counts = Counter(preds)
+
+        attack_summary = {
+            "DoS": 0,
+            "Probe": 0,
+            "U2R": 0,
+            "R2L": 0
+        }
+
+        # ✅ Correct KDD mappings
+        dos = ["back", "land", "neptune", "pod", "smurf", "teardrop",
+               "apache2", "udpstorm", "processtable", "worm"]
+
+        probe = ["ipsweep", "nmap", "portsweep", "satan", "mscan", "saint"]
+
+        u2r = ["buffer_overflow", "loadmodule", "perl", "rootkit",
+               "ps", "sqlattack", "xterm"]
+
+        r2l = ["ftp_write", "guess_passwd", "imap", "multihop", "phf",
+               "spy", "warezclient", "warezmaster", "sendmail", "named",
+               "snmpgetattack", "snmpguess", "xlock", "xsnoop", "httptunnel"]
+
+        for attack, count in counts.items():
+            if attack in dos:
+                attack_summary["DoS"] += count
+            elif attack in probe:
+                attack_summary["Probe"] += count
+            elif attack in u2r:
+                attack_summary["U2R"] += count
+            elif attack in r2l:
+                attack_summary["R2L"] += count
+            # Optional debug
+            # else:
+            #     print("Unknown attack:", attack)
+        
+        
 
         # 🔥 2. Severity
         ratio = attacks / total
@@ -127,7 +165,8 @@ async def predict(file: UploadFile = File(...)):
             "attack_percentage": float(ratio * 100),
             "density": density_data,
             "severity": severity,
-            "services": service_data   # 🔥 NEW DATA FOR TABLE
+            "services": service_data,  # 🔥 NEW DATA FOR TABLE
+            "attack_summary": attack_summary
         }
 
     except Exception as e:

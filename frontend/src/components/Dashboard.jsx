@@ -78,27 +78,34 @@ export default function Dashboard({ data }) {
 
         {/* 📊 BAR */}
         <GlassCard title="Attack Density">
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={data.density}>
-              <defs>
-                <linearGradient id="barGold" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f7d449" />
-                  <stop offset="100%" stopColor="#613f05" />
-                </linearGradient>
-              </defs>
+  <ResponsiveContainer width="100%" height={250}>
+    <BarChart
+      data={[
+        { type: "DoS", value: data.attack_summary?.DoS || 0 },
+        { type: "Probe", value: data.attack_summary?.Probe || 0 },
+        { type: "U2R", value: data.attack_summary?.U2R || 0 },
+        { type: "R2L", value: data.attack_summary?.R2L || 0 },
+      ]}
+    >
+      <defs>
+        <linearGradient id="barGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f7d449" />
+          <stop offset="100%" stopColor="#613f05" />
+        </linearGradient>
+      </defs>
 
-              <XAxis dataKey="segment" stroke="#fff" tick={{ fill: "#fff" }} />
-              <YAxis stroke="#fff" tick={{ fill: "#fff" }} />
-              <Tooltip contentStyle={tooltipStyle} />
+      <XAxis dataKey="type" stroke="#fff" tick={{ fill: "#fff" }} />
+      <YAxis stroke="#fff" tick={{ fill: "#fff" }} />
+      <Tooltip contentStyle={tooltipStyle} />
 
-              <Bar
-                dataKey="attacks"
-                fill="url(#barGold)"
-                radius={[25, 25, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </GlassCard>
+      <Bar
+        dataKey="value"
+        fill="url(#barGold)"
+        radius={[25, 25, 0, 0]}
+      />
+    </BarChart>
+  </ResponsiveContainer>
+</GlassCard>
 
         {/* 📈 AREA */}
         <GlassCard title="Attack Flow">
